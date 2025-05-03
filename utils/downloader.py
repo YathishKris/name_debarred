@@ -10,6 +10,7 @@ import traceback
 from config import Config
 from utils.url_discovery import URLDiscovery
 from utils.data_processor import DataProcessor
+from utils.demo_data import DemoDataGenerator
 from models import DownloadHistory, DebarredEntity, Settings, db
 
 logger = logging.getLogger(__name__)
@@ -287,33 +288,86 @@ def run_download_job(app):
     Config.create_directories()
     
     with app.app_context():
-        downloader = Downloader(app)
+        # Check if we should use demo mode
+        settings = Settings.query.first()
+        use_demo_mode = settings and settings.use_demo_mode
         
-        # Download NSE data
-        nse_success, nse_count, nse_error = downloader.download_nse_data()
-        
-        # Record NSE download history
-        nse_history = DownloadHistory(
-            source="NSE",
-            status="success" if nse_success else "failed",
-            entities_count=nse_count,
-            error_message=nse_error
-        )
-        db.session.add(nse_history)
-        db.session.commit()
-        
-        # Download BSE data
-        bse_success, bse_count, bse_error = downloader.download_bse_data()
-        
-        # Record BSE download history
-        bse_history = DownloadHistory(
-            source="BSE",
-            status="success" if bse_success else "failed",
-            entities_count=bse_count,
-            error_message=bse_error
-        )
-        db.session.add(bse_history)
-        db.session.commit()
+        if use_demo_mode:
+            logger.info("Using demo mode to generate sample data")
+            
+            # Generate demo NSE data
+            try:
+                nse_count = DemoDataGenerator.generate_nse_data()
+                nse_success = True
+                nse_error = None
+                logger.info(f"Generated {nse_count} NSE demo entities")
+            except Exception as e:
+                nse_success = False
+                nse_count = 0
+                nse_error = f"Error generating NSE demo data: {str(e)}"
+                logger.error(f"{nse_error}\n{traceback.format_exc()}")
+            
+            # Record NSE download history
+            nse_history = DownloadHistory(
+                source="NSE",
+                status="success" if nse_success else "failed",
+                entities_count=nse_count,
+                error_message=nse_error
+            )
+            db.session.add(nse_history)
+            db.session.commit()
+            
+            # Generate demo BSE data
+            try:
+                bse_count = DemoDataGenerator.generate_bse_data()
+                bse_success = True
+                bse_error = None
+                logger.info(f"Generated {bse_count} BSE demo entities")
+            except Exception as e:
+                bse_success = False
+                bse_count = 0
+                bse_error = f"Error generating BSE demo data: {str(e)}"
+                logger.error(f"{bse_error}\n{traceback.format_exc()}")
+            
+            # Record BSE download history
+            bse_history = DownloadHistory(
+                source="BSE",
+                status="success" if bse_success else "failed",
+                entities_count=bse_count,
+                error_message=bse_error
+            )
+            db.session.add(bse_history)
+            db.session.commit()
+            
+        else:
+            # Use real download functionality
+            downloader = Downloader(app)
+            
+            # Download NSE data
+            nse_success, nse_count, nse_error = downloader.download_nse_data()
+            
+            # Record NSE download history
+            nse_history = DownloadHistory(
+                source="NSE",
+                status="success" if nse_success else "failed",
+                entities_count=nse_count,
+                error_message=nse_error
+            )
+            db.session.add(nse_history)
+            db.session.commit()
+            
+            # Download BSE data
+            bse_success, bse_count, bse_error = downloader.download_bse_data()
+            
+            # Record BSE download history
+            bse_history = DownloadHistory(
+                source="BSE",
+                status="success" if bse_success else "failed",
+                entities_count=bse_count,
+                error_message=bse_error
+            )
+            db.session.add(bse_history)
+            db.session.commit()
         
         logger.info("Download job completed")
         

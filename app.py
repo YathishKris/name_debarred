@@ -200,6 +200,9 @@ def settings():
             nse_manual_url = request.form.get('nse_manual_url', '').strip()
             bse_manual_url = request.form.get('bse_manual_url', '').strip()
             
+            # Handle demo mode
+            use_demo_mode = request.form.get('use_demo_mode') == 'true'
+            
             settings = Settings.query.first()
             if not settings:
                 settings = Settings()
@@ -214,6 +217,9 @@ def settings():
             settings.use_manual_urls = use_manual_urls
             settings.nse_manual_url = nse_manual_url
             settings.bse_manual_url = bse_manual_url
+            
+            # Update demo mode setting
+            settings.use_demo_mode = use_demo_mode
             
             db.session.commit()
             

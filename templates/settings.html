@@ -91,6 +91,24 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="card mb-4">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="mb-0">Demo Mode</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-warning">
+                                        <small><i class="fas fa-exclamation-triangle me-1"></i> Enable this mode for testing when no valid NSE/BSE URLs are available. This will generate sample data for demonstration purposes.</small>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="use_demo_mode" name="use_demo_mode" value="true" {% if settings and settings.use_demo_mode %}checked{% endif %}>
+                                        <label class="form-check-label" for="use_demo_mode">
+                                            <strong>Enable Demo Mode</strong> (uses sample data instead of real API endpoints)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">

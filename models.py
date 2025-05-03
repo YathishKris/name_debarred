@@ -45,5 +45,8 @@ class Settings(db.Model):
     nse_manual_url = db.Column(db.String(500), nullable=True)  # Manual URL for NSE data
     bse_manual_url = db.Column(db.String(500), nullable=True)  # Manual URL for BSE data
     
+    # Demo mode for testing without real API endpoints
+    use_demo_mode = db.Column(db.Boolean, default=False)  # Whether to use demo data
+    
     def __repr__(self):
         return f'<Settings {self.hour}:{self.minute}>'
