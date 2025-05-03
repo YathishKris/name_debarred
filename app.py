@@ -24,8 +24,8 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev_secret_key")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# Configure database - using SQLite by default
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///debarred_entities.db")
+# Configure database - using PostgreSQL
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_recycle": 300,
     "pool_pre_ping": True,
@@ -81,7 +81,7 @@ def index():
     # Get the next scheduled run time
     next_run = None
     job = scheduler.get_job('download_job')
-    if job:
+    if job and hasattr(job, 'next_run_time'):
         next_run = job.next_run_time
     
     settings = Settings.query.first()
