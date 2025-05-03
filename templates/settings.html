@@ -58,6 +58,40 @@
                                 </div>
                             </div>
                             
+                            <div class="card mb-4">
+                                <div class="card-header bg-danger text-white">
+                                    <h5 class="mb-0">Manual URL Overrides</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="alert alert-info">
+                                        <small><i class="fas fa-info-circle me-1"></i> Use these settings only if automatic URL discovery fails consistently. Enter the direct download URLs for NSE and BSE debarred entities data.</small>
+                                    </div>
+                                    
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" id="use_manual_urls" name="use_manual_urls" value="true" {% if settings and settings.use_manual_urls %}checked{% endif %}>
+                                        <label class="form-check-label" for="use_manual_urls">
+                                            Enable manual URL overrides
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <label for="nse_manual_url" class="col-sm-4 col-form-label">NSE Download URL</label>
+                                        <div class="col-sm-8">
+                                            <input type="url" class="form-control" id="nse_manual_url" name="nse_manual_url" value="{{ settings.nse_manual_url if settings and settings.nse_manual_url else '' }}">
+                                            <div class="form-text">Direct URL to download NSE debarred entities data</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mb-3">
+                                        <label for="bse_manual_url" class="col-sm-4 col-form-label">BSE Download URL</label>
+                                        <div class="col-sm-8">
+                                            <input type="url" class="form-control" id="bse_manual_url" name="bse_manual_url" value="{{ settings.bse_manual_url if settings and settings.bse_manual_url else '' }}">
+                                            <div class="form-text">Direct URL to download BSE debarred entities data</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-save me-1"></i> Save Settings

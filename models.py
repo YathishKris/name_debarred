@@ -40,5 +40,10 @@ class Settings(db.Model):
     retry_attempts = db.Column(db.Integer, default=3)  # Number of retry attempts
     retry_delay = db.Column(db.Integer, default=5)  # Delay between retries in minutes
     
+    # Manual URL overrides
+    use_manual_urls = db.Column(db.Boolean, default=False)  # Whether to use manual URLs
+    nse_manual_url = db.Column(db.String(500), nullable=True)  # Manual URL for NSE data
+    bse_manual_url = db.Column(db.String(500), nullable=True)  # Manual URL for BSE data
+    
     def __repr__(self):
         return f'<Settings {self.hour}:{self.minute}>'

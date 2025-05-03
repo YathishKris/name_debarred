@@ -1,5 +1,6 @@
 import os
 import logging
+import traceback
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, g
 from flask_sqlalchemy import SQLAlchemy
@@ -7,6 +8,8 @@ from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+
+from config import Config
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -96,10 +99,39 @@ def index():
 def run_now():
     try:
         # Run the download job immediately
-        run_download_job(app)
-        flash('Download job has been executed successfully!', 'success')
+        logger.info("Manual download job triggered by user")
+        
+        # Create necessary directories
+        Config.create_directories()
+        
+        result = run_download_job(app)
+        
+        if result:
+            nse_result = result.get('nse', {})
+            bse_result = result.get('bse', {})
+            
+            nse_success = nse_result.get('success', False)
+            bse_success = bse_result.get('success', False)
+            
+            nse_count = nse_result.get('count', 0)
+            bse_count = bse_result.get('count', 0)
+            
+            total_count = nse_count + bse_count
+            
+            if nse_success and bse_success:
+                flash(f'Download job completed successfully! Downloaded {total_count} entities.', 'success')
+            elif nse_success:
+                flash(f'NSE download succeeded ({nse_count} entities), but BSE download failed: {bse_result.get("error")}', 'warning')
+            elif bse_success:
+                flash(f'BSE download succeeded ({bse_count} entities), but NSE download failed: {nse_result.get("error")}', 'warning')
+            else:
+                flash(f'Download job failed. NSE error: {nse_result.get("error")}. BSE error: {bse_result.get("error")}', 'danger')
+        else:
+            flash('Download job completed but returned no results.', 'warning')
+            
     except Exception as e:
         logger.error(f"Error running job manually: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         flash(f'Error running job: {str(e)}', 'danger')
         
     return redirect(url_for('index'))
@@ -163,6 +195,11 @@ def settings():
             retry_attempts = int(request.form.get('retry_attempts', 3))
             retry_delay = int(request.form.get('retry_delay', 5))
             
+            # Handle manual URL settings
+            use_manual_urls = request.form.get('use_manual_urls') == 'true'
+            nse_manual_url = request.form.get('nse_manual_url', '').strip()
+            bse_manual_url = request.form.get('bse_manual_url', '').strip()
+            
             settings = Settings.query.first()
             if not settings:
                 settings = Settings()
@@ -173,6 +210,11 @@ def settings():
             settings.retry_attempts = retry_attempts
             settings.retry_delay = retry_delay
             
+            # Update manual URL settings
+            settings.use_manual_urls = use_manual_urls
+            settings.nse_manual_url = nse_manual_url
+            settings.bse_manual_url = bse_manual_url
+            
             db.session.commit()
             
             # Reinitialize scheduler with new settings
@@ -181,6 +223,8 @@ def settings():
             flash('Settings updated successfully!', 'success')
             return redirect(url_for('settings'))
         except Exception as e:
+            logger.error(f"Error updating settings: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             flash(f'Error updating settings: {str(e)}', 'danger')
     
     settings = Settings.query.first()

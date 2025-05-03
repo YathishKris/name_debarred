@@ -6,6 +6,8 @@ import requests
 from urllib.parse import urljoin, urlparse
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -31,6 +33,19 @@ class URLDiscovery:
             str: The discovered download URL, or None if not found
         """
         logger.info("Discovering NSE download URL...")
+        
+        # First check if we have a manual URL override
+        from models import Settings
+        from flask import current_app
+        
+        with current_app.app_context():
+            settings = Settings.query.first()
+            if settings and settings.use_manual_urls and settings.nse_manual_url:
+                manual_url = settings.nse_manual_url.strip()
+                if manual_url:
+                    logger.info(f"Using manual NSE URL override: {manual_url}")
+                    return manual_url
+        
         try:
             # First attempt: Try to get download link directly from the page
             headers = Config.get_headers()
@@ -83,8 +98,10 @@ class URLDiscovery:
             chrome_options.add_argument("--disable-dev-shm-usage")
             chrome_options.add_argument(f"user-agent={Config.USER_AGENT}")
             
-            driver = webdriver.Chrome(options=chrome_options)
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service, options=chrome_options)
             driver.get(urljoin(Config.NSE_BASE_URL, Config.NSE_DEBARRED_PAGE))
+            logger.info("Chrome driver started and navigating to NSE page")
             
             # Wait for the page to load
             WebDriverWait(driver, 20).until(
@@ -146,6 +163,19 @@ class URLDiscovery:
             str: The discovered download URL, or None if not found
         """
         logger.info("Discovering BSE download URL...")
+        
+        # First check if we have a manual URL override
+        from models import Settings
+        from flask import current_app
+        
+        with current_app.app_context():
+            settings = Settings.query.first()
+            if settings and settings.use_manual_urls and settings.bse_manual_url:
+                manual_url = settings.bse_manual_url.strip()
+                if manual_url:
+                    logger.info(f"Using manual BSE URL override: {manual_url}")
+                    return manual_url
+        
         try:
             # First try: direct page access
             headers = Config.get_headers()
@@ -206,8 +236,10 @@ class URLDiscovery:
             chrome_options.add_argument("--disable-dev-shm-usage")
             chrome_options.add_argument(f"user-agent={Config.USER_AGENT}")
             
-            driver = webdriver.Chrome(options=chrome_options)
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service, options=chrome_options)
             driver.get(urljoin(Config.BSE_BASE_URL, Config.BSE_DEBARRED_PAGE))
+            logger.info("Chrome driver started and navigating to BSE page")
             
             # Wait for the page to load
             WebDriverWait(driver, 20).until(
