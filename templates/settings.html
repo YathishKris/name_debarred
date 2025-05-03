@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Settings</h5>
+                <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8 mx-auto">
+                        <form method="post" action="{{ url_for('settings') }}">
+                            <div class="card mb-4">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">Schedule Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <label for="hour" class="col-sm-4 col-form-label">Run Hour (24-hour format)</label>
+                                        <div class="col-sm-8">
+                                            <input type="number" class="form-control" id="hour" name="hour" min="0" max="23" value="{{ settings.hour if settings else 1 }}" required>
+                                            <div class="form-text">The hour when the daily download will run (0-23)</div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label for="minute" class="col-sm-4 col-form-label">Run Minute</label>
+                                        <div class="col-sm-8">
+                                            <input type="number" class="form-control" id="minute" name="minute" min="0" max="59" value="{{ settings.minute if settings else 0 }}" required>
+                                            <div class="form-text">The minute when the daily download will run (0-59)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card mb-4">
+                                <div class="card-header bg-warning text-dark">
+                                    <h5 class="mb-0">Error Handling Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-3">
+                                        <label for="retry_attempts" class="col-sm-4 col-form-label">Retry Attempts</label>
+                                        <div class="col-sm-8">
+                                            <input type="number" class="form-control" id="retry_attempts" name="retry_attempts" min="1" max="10" value="{{ settings.retry_attempts if settings else 3 }}" required>
+                                            <div class="form-text">Number of retry attempts if download fails</div>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <label for="retry_delay" class="col-sm-4 col-form-label">Retry Delay (minutes)</label>
+                                        <div class="col-sm-8">
+                                            <input type="number" class="form-control" id="retry_delay" name="retry_delay" min="1" max="60" value="{{ settings.retry_delay if settings else 5 }}" required>
+                                            <div class="form-text">Delay between retry attempts in minutes</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Save Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
